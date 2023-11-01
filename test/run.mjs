@@ -1,7 +1,9 @@
+import dotenv from 'dotenv';
 import InstantAPI from '@instant.dev/api';
-
-const PORT = 7357;
 const TestEngine = InstantAPI.TestEngine;
+const PORT = 7357;
+
+dotenv.config({path: '.env.test'});
 
 const testEngine = new TestEngine(PORT);
 await testEngine.initialize('./test/tests');
