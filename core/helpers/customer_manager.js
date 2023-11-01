@@ -21,11 +21,11 @@ class CustomerManager {
     return customer;
   }
 
-  async unsubscribeCustomer (customer) {
-    return this.subscribeCustomer(customer, null);
+  async unsubscribeCustomer (customer, existingLineItemCounts) {
+    return this.subscribeCustomer(customer, null, null, existingLineItemCounts);
   }
 
-  async subscribeCustomer (customer, planName, lineItemCounts = null, successURL = null, cancelURL = null) {
+  async subscribeCustomer (customer, planName, lineItemCounts = null, existingLineItemCounts = null, successURL = null, cancelURL = null) {
     if (!(customer instanceof Customer)) {
       throw new Error(`subscribeCustomer requires a valid customer`);
     }
@@ -120,10 +120,72 @@ class CustomerManager {
     } else if (currentPlan.stripeData.subscription && planName === currentPlan.name) {
       throw new Error(`Customer "${customer.email}" is already subscribed to "${planName}"`);
     }
+    // If we provide existingLineItemCounts, check if we're over flag limits
+    // Capacity limits are checked further down
+    let existingLineItemErrors = {};
+    if (existingLineItemCounts) {
+      for (const key in existingLineItemCounts) {
+        let existingCount = existingLineItemCounts[key];
+        let lineItem = plan.lineItems.find(lineItem => lineItem.name === key);
+        if (!lineItem) {
+          throw new Error(`existingLineItemCounts: Invalid line item "${key}"`);
+        } else if (lineItem.type === 'flag') {
+          if (typeof lineItem.settings.value === 'number') {
+            if (typeof existingCount !== 'number') {
+              throw new Error(`existingLineItemCounts: Line item "${key}" (flag) expects a number`);
+            } else if (existingCount > lineItem.settings.value) {
+              existingLineItemErrors[key] = {expected: lineItem.settings.value, actual: existingCount};
+            }
+          } else if (existingCount !== lineItem.settings.value) {
+            existingLineItemErrors[key] = {expected: lineItem.settings.value, actual: existingCount};
+          }
+        } else if (lineItem.type === 'capacity') {
+          if (typeof existingCount !== 'number') {
+            throw new Error(`existingLineItemCounts: Line item "${key}" (capacity) expects a number`);
+          }
+        } else {
+          throw new Error(`existingLineItemCounts: Can not provide value for line item "${key}", must be type "capacity" or "flag"`);
+        }
+      }
+    }
     let subscription = null;
     if (!planName) {
       // If we provide planName = null, just delete the subscription
       if (currentPlan.stripeData && currentPlan.stripeData.subscription) {
+        // If we provided existing line item counts now we see if we're over limit
+        if (existingLineItemCounts) {
+          const lineItems = plan.lineItems.filter(lineItem => {
+            return lineItem.type === 'capacity' && (lineItem.name in existingLineItemCounts);
+          });
+          for (const lineItem of lineItems) {
+            let existingCount = existingLineItemCounts[lineItem.name];
+            if (existingCount > lineItem.settings.included_count) {
+              existingLineItemErrors[lineItem.name] = {expected: lineItem.settings.included_count, actual: existingCount};
+            }
+          }
+        }
+        // Only validate existingLineItemErrors on downgrades and equal plan settings
+        // Always allow upgrades
+        if (
+          Object.keys(existingLineItemErrors).length &&
+          (!currentPlan.price || !plan.price || currentPlan.price['usd'] >= plan.price['usd'])
+        ) {
+          let keys = Object.keys(existingLineItemErrors);
+          let error = new Error(
+            `existingLineItemCounts: You are over plan "${plan.name}" limits.\n` +
+            `To change your subscription you must adjust your capacities:\n` +
+            keys.map(key => {
+              let diff = existingLineItemErrors[key];
+              if (typeof diff.expected === 'number') {
+                return ` - "${key}" must be reduced from ${diff.actual} to ${diff.expected}`;
+              } else {
+                return ` - "${key}" must be modified from ${diff.actual} to ${diff.expected}`;
+              }
+            }).join('\n')
+          );
+          error.details = existingLineItemErrors;
+          throw error;
+        }
         await this.stripe.subscriptions.cancel(
           currentPlan.stripeData.subscription.id,
           {
@@ -204,6 +266,13 @@ class CustomerManager {
                   quantity = Math.max(0, quantity - includedCountDelta);
                 }
               }
+              // If we provided existing line item counts now we see if we're over limit
+              if (existingLineItemCounts && existingLineItemCounts[lineItem.name]) {
+                let existingCount = existingLineItemCounts[lineItem.name];
+                if (existingCount > quantity + lineItem.settings.included_count) {
+                  existingLineItemErrors[lineItem.name] = {expected: quantity + lineItem.settings.included_count, actual: existingCount};
+                }
+              }
               data = {
                 price: lineItemPrice.id,
                 quantity: quantity,
@@ -226,6 +295,28 @@ class CustomerManager {
           return data;
         })
         .filter(entry => !!entry);
+      // Only validate existingLineItemErrors on downgrades and equal plan settings
+      // Always allow upgrades
+      if (
+        Object.keys(existingLineItemErrors).length &&
+        (!currentPlan.price || !plan.price || currentPlan.price['usd'] >= plan.price['usd'])
+      ) {
+        let keys = Object.keys(existingLineItemErrors);
+        let error = new Error(
+          `existingLineItemCounts: You are over plan "${plan.name}" limits.\n` +
+          `To change your subscription you must adjust your capacities:\n` +
+          keys.map(key => {
+            let diff = existingLineItemErrors[key];
+            if (typeof diff.expected === 'number') {
+              return ` - "${key}" must be reduced from ${diff.actual} to ${diff.expected}`;
+            } else {
+              return ` - "${key}" must be modified from ${diff.actual} to ${diff.expected}`;
+            }
+          }).join('\n')
+        );
+        error.details = existingLineItemErrors;
+        throw error;
+      }
       const items = [].concat(planEntries, lineItemEntries);
       let removeItems = items
         .filter(item => item.quantity === 0)

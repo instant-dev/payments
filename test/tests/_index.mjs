@@ -237,7 +237,7 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.customers.subscribe(email, 'free_plan', null, 'https://example.com/success');
+      await payments.customers.subscribe(email, 'free_plan', null, null, 'https://example.com/success');
     } catch (e) {
       error = e;
     }
@@ -251,7 +251,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subResult = await payments.customers.subscribe(email, 'free_plan', null, 'https://example.com/success', 'https://example.com/failure');
+    let subResult = await payments.customers.subscribe(email, 'free_plan', null, null, 'https://example.com/success', 'https://example.com/failure');
 
     expect(subResult).to.exist;
     expect(subResult.stripe_publish_key).to.exist;
@@ -587,6 +587,8 @@ export default async function (setupResult) {
 
   it('should retrieve further modified plan details with new line items set properly', async function () {
 
+    this.timeout(5000);
+
     let planResult = await payments.plans.current(email);
 
     expect(planResult).to.exist;
@@ -640,6 +642,8 @@ export default async function (setupResult) {
   });
 
   it('should retrieve upgraded plan line items set properly', async function () {
+
+    this.timeout(5000);
 
     let planResult = await payments.plans.current(email);
 
@@ -892,6 +896,29 @@ export default async function (setupResult) {
     expect(planResult.currentPlan.is_incomplete).to.equal(false);
     expect(planResult.currentPlan.is_past_due).to.equal(true);
     expect(planResult.currentPlan.invoice_url).to.exist;
+
+  });
+
+  it('should fail to cancel the subscription if you\'re over usage', async function () {
+
+    this.timeout(5000);
+
+    let error;
+    
+    try {
+      await payments.customers.unsubscribe(email, {collaborator_seats: 7, projects: 22, memory: 1024});
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).to.exist;
+    expect(error.message).to.contain(`"collaborator_seats" must be reduced from 7 to 2`);
+    expect(error.message).to.contain(`"projects" must be reduced from 22 to 10`);
+    expect(error.message).to.contain(`"memory" must be reduced from 1024 to 512`);
+    expect(error.details).to.exist;
+    expect(error.details['collaborator_seats']).to.deep.equal({expected: 2, actual: 7});
+    expect(error.details['projects']).to.deep.equal({expected: 10, actual: 22});
+    expect(error.details['memory']).to.deep.equal({expected: 512, actual: 1024});
 
   });
 
