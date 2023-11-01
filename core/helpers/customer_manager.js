@@ -9,10 +9,10 @@ class CustomerManager {
   static STRIPE_METADATA_PREFIX = 'instpay';
   static USAGE_RECORD_WAIT_TIME = 10 * 1000;  // 10s between createUsageRecord calls
 
-  constructor (secretKey, publishableKey, plans) {
+  constructor (secretKey, publishableKey, cachedPlans) {
     this.stripe = createStripeProxy('stripe', require('stripe')(secretKey));
     this.publishableKey = publishableKey;
-    this.plans = plans;
+    this.plans = cachedPlans;
   }
 
   async findCustomer (email) {

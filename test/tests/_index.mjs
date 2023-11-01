@@ -1,13 +1,11 @@
 import chai from 'chai';
 const expect = chai.expect;
 
+import fs from 'fs';
+
 import loadStripe from 'stripe';
 const stripe = loadStripe(process.env.STRIPE_SECRET_KEY);
 
-import Plans from '../fixtures/plans.js';
-import LineItems from '../fixtures/line_items.js';
-
-import Bootstrapper from '../../core/bootstrapper/index.js';
 import InstantPayments from '../../core/index.js';
 
 export const name = 'Main tests';
@@ -15,6 +13,8 @@ export default async function (setupResult) {
 
   let payments;
   let plans;
+  let Plans;
+  let LineItems;
   let email = `test+${new Date().valueOf()}@instant.dev`;
   let stripeCustomer = null;
   let stripePaymentMethod = null;
@@ -28,7 +28,14 @@ export default async function (setupResult) {
 
     console.log(`Bootstrapping plans...`);
 
-    plans = await Bootstrapper.bootstrap(stripe, Plans, LineItems);
+    let cache;
+    ({cache, Plans, LineItems} = await InstantPayments.bootstrap(
+      process.env.STRIPE_SECRET_KEY,
+      './test/fixtures/plans.json',
+      './test/fixtures/line_items.json'
+    ));
+
+    plans = cache;
 
     const t = new Date().valueOf() - t0;
     console.log(`Bootstrapping plans took ${t} ms!`);
@@ -191,9 +198,21 @@ export default async function (setupResult) {
 
   });
 
+  it('can write plans to file', async () => {
+
+    InstantPayments.writeCache('./test_cache.json', 'test', plans);
+
+    expect(fs.existsSync('./test_cache.json')).to.equal(true);
+
+  });
+
   it('can instantiate payments', async () => {
 
-    payments = new InstantPayments(process.env.STRIPE_SECRET_KEY, process.env.STRIPE_PUBLISHABLE_KEY, plans);
+    payments = new InstantPayments(
+      process.env.STRIPE_SECRET_KEY,
+      process.env.STRIPE_PUBLISHABLE_KEY,
+      './test_cache.json'
+    );
 
     expect(payments).to.exist;
 

@@ -1,4 +1,4 @@
-module.exports = [
+[
   {
     "name": "free_plan",
     "display_name": "Limited",
@@ -130,4 +130,4 @@ module.exports = [
       }
     }
   }
-];
+]

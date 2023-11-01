@@ -1,3 +1,5 @@
+const loadStripe = require('stripe');
+
 // Core Library
 const CustomerManager = require('../helpers/customer_manager.js');
 const STRIPE_METADATA_PREFIX = CustomerManager.STRIPE_METADATA_PREFIX;
@@ -249,7 +251,9 @@ const findOrCreatePrices = async (stripe, product, obj, isPlan) => {
 };
 
 module.exports = {
-  bootstrap: async (stripe, Plans, LineItems) => {
+  bootstrap: async (secretKey, Plans, LineItems) => {
+
+    const stripe = loadStripe(secretKey);
 
     // First, validate Plans and LineItems
     SchemaValidations.validate('LineItems', LineItems, LineItemsValidations);

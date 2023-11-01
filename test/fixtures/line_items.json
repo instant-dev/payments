@@ -1,4 +1,4 @@
-module.exports = [
+[
   {
     "name": "execution_time",
     "display_name": "Execution time",
@@ -50,7 +50,7 @@ module.exports = [
   {
     "name": "environments",
     "display_name": "Environments per project",
-    "description": "The number of development environments that you can work on per project, e.g. dev, staging. Releases don\'t count towards this number.",
+    "description": "The number of development environments that you can work on per project, e.g. dev, staging. Releases don't count towards this number.",
     "type": "capacity",
     "settings": {
       "price": {
@@ -133,4 +133,4 @@ module.exports = [
       "display_value": "Community support"
     }
   }
-];
+]
