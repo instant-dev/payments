@@ -9,10 +9,10 @@ class InvoicesObject {
   }
 
   /**
-     * Lists all invoices for a customer
-     * @param {string} email Customer email address
-     * @returns {array} invoices
-     */
+   * Lists all invoices for a customer
+   * @param {string} email Customer email address
+   * @returns {array} invoices
+   */
   async list ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
