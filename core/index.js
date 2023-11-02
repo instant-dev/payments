@@ -14,6 +14,16 @@ const UsageRecordsObject = require('./objects/usage_records.js');
 
 class InstantPayments {
 
+  /**
+   * Bootstraps Stripe with `metadata: instpay` products and prices corresponding to your line items
+   * @param {string} secretKey         Your Stripe secret key
+   * @param {string} plansPathname     Path to your plans.json object
+   * @param {string} lineItemsPathname Path to your line_items.json object
+   * @returns {object} bootstrapResult           The result of bootstrapping
+   * @returns {object} bootstrapResult.cache     Your cached Stripe plans object
+   * @returns {array}  bootstrapResult.Plans     Templates for your Plans from plans.json
+   * @returns {array}  bootstrapResult.LineItems Templates for your Line Items from line_items.json
+   */
   static async bootstrap (secretKey, plansPathname, lineItemsPathname) {
     let files = [
       {pathname: plansPathname, identifier: 'plansPathname', output: 'Plans'},
@@ -46,6 +56,13 @@ class InstantPayments {
     return {cache, Plans, LineItems};
   }
 
+  /**
+   * Writes a file to cache your bootstrapped plans and associated them with an environment
+   * @param {string} cachePathname Desired pathname for your cached plans
+   * @param {string} env           Desired environment (e.g. development, test, production)
+   * @param {object} cache         JSON for your cached plans
+   * @returns {boolean} success
+   */
   static async writeCache (cachePathname, env, cache) {
     cachePathname = cachePathname.replaceAll('~', os.homedir());
     if (!cachePathname.startsWith('/')) {
@@ -70,8 +87,16 @@ class InstantPayments {
     }
     json[env] = cache;
     fs.writeFileSync(cachePathname, JSON.stringify(json, null, 2));
+    return true;
   }
 
+  /**
+   * Creates a new InstantPayments instance by loading from a cache
+   * Will load based on `process.env.NODE_ENV`
+   * @param {string} secretKey      Your Stripe secret key
+   * @param {string} publishableKey Your Stripe publishable key
+   * @param {string} cachePathname  The pathname for your cached plan details
+   */
   constructor (secretKey, publishableKey, cachePathname) {
 
     let cachedPlans;

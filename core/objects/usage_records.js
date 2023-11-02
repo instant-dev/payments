@@ -17,7 +17,7 @@ class UsageRecordsObject {
    * @param {integer{-10,0}} log2Scale Scale factor in which to adjust quantity x 2^n
    * @returns {object} usageRecord
    */
-  async create (email, lineItemName, quantity, log10Scale = 0, log2Scale = 0) {
+  async create ({email, lineItemName, quantity, log10Scale = 0, log2Scale = 0}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return await this.customerManager.createCustomerUsageRecord(customer, lineItemName, quantity, log10Scale, log2Scale);

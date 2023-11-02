@@ -25,7 +25,7 @@ class PlansObject {
    * @returns {object} planResult.currentPlan Current Subscription plan
    * @returns {array}  planResult.plans       All available plans
    */
-  async current (email) {
+  async current ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
     const plan = await customer.getCurrentPlan(this.customerManager.plans);
@@ -46,7 +46,7 @@ class PlansObject {
    * @returns {boolean} planResult.currentPlan.is_past_due   is the subscription past due?
    * @returns {string}  planResult.currentPlan.invoice_url   URL of the invoice, if incomplete or past due
    */
-  async billingStatus (email) {
+  async billingStatus ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
     const subscription = await customer.getSubscription();

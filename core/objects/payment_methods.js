@@ -17,7 +17,7 @@ class paymentMethodsObject {
    * @returns {string} checkoutSession.stripe_publish_key         Key to use for creating Stripe checkout sessions
    * @returns {string} checkoutSession.stripe_checkout_session_id Checkout session id for use with Stripe's frontend library
    */
-  async create (email, successURL, cancelURL) {
+  async create ({email, successURL, cancelURL}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return {
@@ -32,7 +32,7 @@ class paymentMethodsObject {
    * @param {string} email Customer email address
    * @returns {array} paymentMethods
    */
-  async list (email) {
+  async list ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return customer.listPaymentMethods(true);
@@ -45,7 +45,7 @@ class paymentMethodsObject {
    * @param {string} paymentMethodId The Stripe ID of the payment method to remove
    * @returns {array} paymentMethods List of all existing payment methods
    */
-  async remove (email, paymentMethodId) {
+  async remove ({email, paymentMethodId}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return customer.removePaymentMethod(paymentMethodId, true);
@@ -58,7 +58,7 @@ class paymentMethodsObject {
    * @param {string} paymentMethodId The Stripe ID of the payment method to remove
    * @returns {object} paymentMethod Payment method object created
    */
-  async setDefault (email, paymentMethodId) {
+  async setDefault ({email, paymentMethodId}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return customer.setDefaultPaymentMethod(paymentMethodId, true);

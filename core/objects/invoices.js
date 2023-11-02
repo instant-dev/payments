@@ -13,7 +13,7 @@ class InvoicesObject {
      * @param {string} email Customer email address
      * @returns {array} invoices
      */
-  async list (email) {
+  async list ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return customer.listInvoices();
@@ -25,7 +25,7 @@ class InvoicesObject {
    * @param {string} email Customer email address
    * @returns {?object} upcomingInvoice
    */
-  async upcoming (email) {
+  async upcoming ({email}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return customer.getUpcomingInvoice();

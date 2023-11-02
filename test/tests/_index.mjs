@@ -220,7 +220,7 @@ export default async function (setupResult) {
 
   it('can retrieve a customer', async () => {
 
-    let customer = await payments.customers.find(email);
+    let customer = await payments.customers.find({email});
     stripeCustomer = customer.stripeData.customer;
 
     expect(customer).to.exist;
@@ -239,7 +239,7 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.customers.subscribe(email, 'free_plan');
+      await payments.customers.subscribe({email, planName: 'free_plan'});
     } catch (e) {
       error = e;
     }
@@ -256,7 +256,11 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.customers.subscribe(email, 'free_plan', null, null, 'https://example.com/success');
+      await payments.customers.subscribe({
+        email,
+        planName: 'free_plan',
+        successURL: 'https://example.com/success'
+      });
     } catch (e) {
       error = e;
     }
@@ -270,7 +274,12 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subResult = await payments.customers.subscribe(email, 'free_plan', null, null, 'https://example.com/success', 'https://example.com/failure');
+    let subResult = await payments.customers.subscribe({
+      email,
+      planName: 'free_plan',
+      successURL: 'https://example.com/success',
+      cancelURL: 'https://example.com/failure'
+    });
 
     expect(subResult).to.exist;
     expect(subResult.stripe_publish_key).to.exist;
@@ -280,7 +289,7 @@ export default async function (setupResult) {
 
   it('should show all subscription plans', async function () {
 
-    let planList = await payments.plans.list(email);
+    let planList = await payments.plans.list({email});
 
     expect(planList).to.exist;
     expect(planList).to.deep.equal(plans);
@@ -289,7 +298,7 @@ export default async function (setupResult) {
 
   it('should show the current subscription plan', async function () {
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -307,7 +316,7 @@ export default async function (setupResult) {
 
   it('should show the current subscription plan billing status', async function () {
 
-    let planResult = await payments.plans.billingStatus(email);
+    let planResult = await payments.plans.billingStatus({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -321,7 +330,7 @@ export default async function (setupResult) {
 
   it('can unsubscribe always, even when no sub exists', async function () {
 
-    let unsubResult = await payments.customers.unsubscribe(email);
+    let unsubResult = await payments.customers.unsubscribe({email});
 
     expect(unsubResult).to.exist;
     expect(unsubResult).to.equal(true);
@@ -344,7 +353,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let paymentMethods = await payments.paymentMethods.list(email);
+    let paymentMethods = await payments.paymentMethods.list({email});
     stripePaymentMethod = paymentMethods[0];
 
     expect(paymentMethods).to.exist;
@@ -359,7 +368,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(email, 'free_plan');
+    let subscription = await payments.customers.subscribe({email, planName: 'free_plan'});
     subId = subscription.id;
 
     expect(subscription).to.exist;
@@ -377,7 +386,7 @@ export default async function (setupResult) {
 
   it('should show the current subscription plan', async function () {
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -402,7 +411,13 @@ export default async function (setupResult) {
     const MBms = (GBs * 1024 * 1000);
     const overflow = 100;
 
-    let usageResult = await payments.usageRecords.create(email, 'execution_time', MBms + overflow, -3, -10);
+    let usageResult = await payments.usageRecords.create({
+      email,
+      lineItemName: 'execution_time',
+      quantity: MBms + overflow,
+      log10Scale: -3,
+      log2Scale: -10
+    });
 
     expect(usageResult).to.exist;
 
@@ -440,7 +455,13 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.usageRecords.create(email, 'execution_time', MBms + overflow, -3, -10);
+      await payments.usageRecords.create({
+        email,
+        lineItemName: 'execution_time',
+        quantity: MBms + overflow,
+        log10Scale: -3,
+        log2Scale: -10
+      });
     } catch (e) {
       error = e;
     }
@@ -461,7 +482,13 @@ export default async function (setupResult) {
     const MBms = (GBs * 1024 * 1000);
     const overflow = 233;
 
-    let usageResult = await payments.usageRecords.create(email, 'execution_time', MBms + overflow, -3, -10);
+    let usageResult = await payments.usageRecords.create({
+      email,
+      lineItemName: 'execution_time',
+      quantity: MBms + overflow,
+      log10Scale: -3,
+      log2Scale: -10
+    });
 
     expect(usageResult).to.exist;
 
@@ -502,7 +529,11 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.customers.subscribe(email, 'free_plan', {collaborator_seats: 4});
+      await payments.customers.subscribe({
+        email,
+        planName: 'free_plan',
+        lineItemCounts: {collaborator_seats: 4}
+      });
     } catch (e) {
       error = e;
     }
@@ -520,17 +551,17 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(
+    let subscription = await payments.customers.subscribe({
       email,
-      'free_plan',
-      {
+      planName: 'free_plan',
+      lineItemCounts: {
         collaborator_seats: 4,
         projects: 15,
         environments: 2,
         linked_apps: 0,
         hostnames: 0
       }
-    );
+    });
 
     expect(subscription).to.exist;
     expect(subscription.items).to.exist;
@@ -546,7 +577,7 @@ export default async function (setupResult) {
 
   it('should retrieve updated plan details with new line items set properly', async function () {
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -579,17 +610,17 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(
+    let subscription = await payments.customers.subscribe({
       email,
-      'free_plan',
-      {
+      planName: 'free_plan',
+      lineItemCounts: {
         collaborator_seats: 6,
         projects: 12,
         environments: 10,
         linked_apps: 1,
         hostnames: 0
       }
-    );
+    });
 
     expect(subscription).to.exist;
     expect(subscription.items).to.exist;
@@ -608,7 +639,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -645,10 +676,10 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(
+    let subscription = await payments.customers.subscribe({
       email,
-      'business_plan'
-    );
+      planName: 'business_plan'
+    });
 
     expect(subscription).to.exist;
     expect(subscription.items).to.exist;
@@ -664,7 +695,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -701,10 +732,10 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(
+    let subscription = await payments.customers.subscribe({
       email,
-      'standard_plan'
-    );
+      planName: 'standard_plan'
+    });
 
     expect(subscription).to.exist;
     expect(subscription.items).to.exist;
@@ -718,7 +749,7 @@ export default async function (setupResult) {
 
   it('should retrieve downgraded plan line items set properly', async function () {
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -753,7 +784,7 @@ export default async function (setupResult) {
 
   it('should list invoices successfully', async function () {
 
-    let invoices = await payments.invoices.list(email);
+    let invoices = await payments.invoices.list({email});
 
     expect(invoices).to.exist;
     expect(invoices.length).to.equal(5);
@@ -767,7 +798,7 @@ export default async function (setupResult) {
 
   it('should list upcoming invoice', async function () {
 
-    let invoice = await payments.invoices.upcoming(email);
+    let invoice = await payments.invoices.upcoming({email});
 
     expect(invoice).to.exist;
     expect(invoice.billing_reason).to.equal('upcoming');
@@ -780,7 +811,7 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.paymentMethods.remove(email, stripePaymentMethod.id);
+      await payments.paymentMethods.remove({email, paymentMethodId: stripePaymentMethod.id});
     } catch (e) {
       error = e;
     }
@@ -806,14 +837,14 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let paymentMethods = await payments.paymentMethods.list(email);
+    let paymentMethods = await payments.paymentMethods.list({email});
     let newPaymentMethod = paymentMethods[1];
 
     expect(paymentMethods).to.exist;
     expect(paymentMethods.length).to.equal(2);
     expect(paymentMethods[1].metadata['is_default_method']).to.not.exist;
 
-    let paymentMethod = await payments.paymentMethods.setDefault(email, newPaymentMethod.id);
+    let paymentMethod = await payments.paymentMethods.setDefault({email, paymentMethodId: newPaymentMethod.id});
 
     expect(paymentMethod).to.exist;
     expect(paymentMethod.id).to.equal(newPaymentMethod.id);
@@ -825,7 +856,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let paymentMethod = await payments.paymentMethods.setDefault(email, stripePaymentMethod.id);
+    let paymentMethod = await payments.paymentMethods.setDefault({email, paymentMethodId: stripePaymentMethod.id});
 
     expect(paymentMethod).to.exist;
     expect(paymentMethod.id).to.equal(stripePaymentMethod.id);
@@ -837,7 +868,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let paymentMethods = await payments.paymentMethods.remove(email, stripePaymentMethod.id);
+    let paymentMethods = await payments.paymentMethods.remove({email, paymentMethodId: stripePaymentMethod.id});
 
     expect(paymentMethods).to.exist;
     expect(paymentMethods.length).to.equal(1);
@@ -856,17 +887,17 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.customers.subscribe(
+      await payments.customers.subscribe({
         email,
-        'business_plan',
-        {
+        planName: 'business_plan',
+        lineItemCounts: {
           collaborator_seats: 100,
           projects: 10,
           environments: 0,
           linked_apps: 0,
           hostnames: 0
         }
-      );
+      });
     } catch (e) {
       error = e;
     }
@@ -880,17 +911,17 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let subscription = await payments.customers.subscribe(
+    let subscription = await payments.customers.subscribe({
       email,
-      'business_plan',
-      {
+      planName: 'business_plan',
+      lineItemCounts: {
         collaborator_seats: 100,
         projects: 0,
         environments: 0,
         linked_apps: 0,
         hostnames: 0
       }
-    );
+    });
 
     expect(subscription).to.exist;
     expect(subscription.items).to.exist;
@@ -906,7 +937,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let planResult = await payments.plans.billingStatus(email);
+    let planResult = await payments.plans.billingStatus({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -925,7 +956,14 @@ export default async function (setupResult) {
     let error;
     
     try {
-      await payments.customers.unsubscribe(email, {collaborator_seats: 7, projects: 22, memory: 1024});
+      await payments.customers.unsubscribe({
+        email,
+        existingLineItemCounts: {
+          collaborator_seats: 7,
+          projects: 22,
+          memory: 1024
+        }
+      });
     } catch (e) {
       error = e;
     }
@@ -945,7 +983,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let unsubResult = await payments.customers.unsubscribe(email);
+    let unsubResult = await payments.customers.unsubscribe({email});
 
     expect(unsubResult).to.equal(true);
 
@@ -953,7 +991,7 @@ export default async function (setupResult) {
 
   it('should show plan as "free_plan" and empty', async function () {
 
-    let planResult = await payments.plans.current(email);
+    let planResult = await payments.plans.current({email});
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -973,7 +1011,7 @@ export default async function (setupResult) {
 
     this.timeout(5000);
 
-    let paymentMethods = await payments.paymentMethods.remove(email, stripePaymentMethod.id);
+    let paymentMethods = await payments.paymentMethods.remove({email, paymentMethodId: stripePaymentMethod.id});
 
     expect(paymentMethods.length).to.equal(0);
 
@@ -984,7 +1022,7 @@ export default async function (setupResult) {
     let error;
 
     try {
-      await payments.paymentMethods.create(email);
+      await payments.paymentMethods.create({email});
     } catch (e) {
       error = e;
     }
@@ -997,7 +1035,11 @@ export default async function (setupResult) {
 
   it('should successfully create new payment method checkout session', async function () {
 
-    let checkoutSession = await payments.paymentMethods.create(email, 'https://example.com/success', 'https://example.com/failure');
+    let checkoutSession = await payments.paymentMethods.create({
+      email,
+      successURL: 'https://example.com/success',
+      cancelURL: 'https://example.com/failure'
+    });
 
     expect(checkoutSession).to.exist;
     expect(checkoutSession.stripe_publish_key).to.exist;
