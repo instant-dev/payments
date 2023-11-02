@@ -5,12 +5,9 @@
 
 ## Use Stripe as a System of Record
 
-Instant Payments is a Stripe wrapper that allows you to build a fully-functional
-Stripe integration without needing to use either a database or webhooks. We built
-Instant Payments because price discovery in SaaS is difficult: pricing and plans
-often take multiple iterations to get right. Having to redo your billing system
-every time you get a new piece of information about price points wastes time you
-could be spending on your product.
+We built Instant Payments because Price discovery in SaaS is difficult: pricing and plans
+often take multiple iterations. Having to redo your billing system every time you get a
+new piece of information about price points wastes time you could be spending on your product.
 
 Instant Payments provides a simple abstraction on top of Stripe that simplifies
 everything to just two `.json` files representing **Plans** and **LineItems**,
