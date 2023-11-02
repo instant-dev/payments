@@ -1,10 +1,13 @@
 {
   "name": "@instant.dev/payments",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Payments library that uses Stripe as a system of record",
   "main": "index.mjs",
   "scripts": {
     "test": "mocha ./test/run.mjs"
+  },
+  "bin": {
+    "payments": "./bin/index.mjs"
   },
   "author": "Keith Horwood",
   "license": "MIT",

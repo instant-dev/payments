@@ -64,6 +64,15 @@ class InstantPayments {
    * @returns {boolean} success
    */
   static async writeCache (cachePathname, env, cache) {
+    if (typeof cachePathname !== 'string') {
+      throw new Error(`cachePathname must be a valid string`);
+    }
+    if (typeof env !== 'string') {
+      throw new Error(`env must be a valid string representing the environment`);
+    }
+    if (!cache || typeof cache !== 'object') {
+      throw new Error(`cache must be a JSON object`);
+    }
     cachePathname = cachePathname.replaceAll('~', os.homedir());
     if (!cachePathname.startsWith('/')) {
       cachePathname = path.join(process.cwd(), cachePathname);

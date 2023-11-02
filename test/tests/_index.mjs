@@ -31,8 +31,8 @@ export default async function (setupResult) {
     let cache;
     ({cache, Plans, LineItems} = await InstantPayments.bootstrap(
       process.env.STRIPE_SECRET_KEY,
-      './test/fixtures/plans.json',
-      './test/fixtures/line_items.json'
+      './_instant/payments/plans.json',
+      './_instant/payments/line_items.json'
     ));
 
     plans = cache;
