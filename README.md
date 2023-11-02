@@ -11,10 +11,9 @@ new piece of information about price points wastes time you could be spending on
 
 Instant Payments provides a simple abstraction on top of Stripe that simplifies
 everything to just two `.json` files representing **Plans** and **LineItems**,
-which provide simplified abstractions over stripe's own `Products`, `Prices`,
-`Subscriptions` and `SubscriptionItems`. Instant Payments takes these files and
-automatically configures Products and Prices in Stripe for you. It then provides
-an easy-to-use `subscribe()` and `unsubscribe()` method:
+which provide abstractions over Stripe's own `Products`, `Prices`, `Subscriptions` and
+`SubscriptionItems`. Instant Payments then provides an easy-to-use
+`subscribe()` and `unsubscribe()` method:
 
 ```javascript
 import InstantPayments from '@instant.dev/payments';
