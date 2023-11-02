@@ -17,6 +17,13 @@ automatically configures Products and Prices in Stripe for you. It then provides
 an easy-to-use `subscribe()` and `unsubscribe()` method:
 
 ```javascript
+import InstantPayments from '@instant.dev/payments';
+const payments = new InstantPayments(
+  process.env.STRIPE_SECRET_KEY,
+  process.env.STRIPE_PUBLISHABLE_KEY,
+  `./cached_plans.json` // contains `plans` and `line_items`
+);
+
 let subscription = await payments.customers.subscribe({
   email,
   planName: 'business_plan',
