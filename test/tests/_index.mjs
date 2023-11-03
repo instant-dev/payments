@@ -282,7 +282,7 @@ export default async function (setupResult) {
     });
 
     expect(subResult).to.exist;
-    expect(subResult.stripe_publish_key).to.exist;
+    expect(subResult.stripe_publishable_key).to.exist;
     expect(subResult.stripe_checkout_session_id).to.exist;
 
   });
@@ -1042,7 +1042,7 @@ export default async function (setupResult) {
     });
 
     expect(checkoutSession).to.exist;
-    expect(checkoutSession.stripe_publish_key).to.exist;
+    expect(checkoutSession.stripe_publishable_key).to.exist;
     expect(checkoutSession.stripe_checkout_session_id).to.exist;
 
   });

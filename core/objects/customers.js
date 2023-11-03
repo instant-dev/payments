@@ -35,7 +35,7 @@ class CustomersObject {
     const customer = await this.customerManager.findCustomer(email);
     const response = await this.customerManager.subscribeCustomer(customer, planName, lineItemCounts, existinglineItemCounts, successURL, cancelURL);
     return {
-      stripe_publish_key: this.customerManager.publishableKey,
+      stripe_publishable_key: this.customerManager.publishableKey,
       ...response
     };
 

@@ -14,14 +14,14 @@ class paymentMethodsObject {
    * @param {string} successURL URL to redirect to if the payment method addition is successful
    * @param {string} cancelURL URL to redirect to if the payment method addition is cancelled
    * @returns {object} checkoutSession
-   * @returns {string} checkoutSession.stripe_publish_key         Key to use for creating Stripe checkout sessions
+   * @returns {string} checkoutSession.stripe_publishable_key     Key to use for creating Stripe checkout sessions
    * @returns {string} checkoutSession.stripe_checkout_session_id Checkout session id for use with Stripe's frontend library
    */
   async create ({email, successURL, cancelURL}) {
 
     const customer = await this.customerManager.findCustomer(email);
     return {
-      stripe_publish_key: this.customerManager.publishableKey,
+      stripe_publishable_key: this.customerManager.publishableKey,
       ...(await customer.createPaymentMethodSession(successURL, cancelURL)),
     };
 

@@ -20,7 +20,7 @@ import InstantPayments from '@instant.dev/payments';
 const payments = new InstantPayments(
   process.env.STRIPE_SECRET_KEY,
   process.env.STRIPE_PUBLISHABLE_KEY,
-  `./_instant/payments/cached/stripe_plans.json` // more on this cached file below
+  `./_instant/payments/cache/stripe_plans.json` // more on this cached file below
 );
 
 let subscription = await payments.customers.subscribe({
@@ -198,7 +198,7 @@ import InstantPayments from '@instant.dev/payments';
 const payments = new InstantPayments(
   process.env.STRIPE_SECRET_KEY,       // we recommend loading these via dotenv
   process.env.STRIPE_PUBLISHABLE_KEY,  // from the same file as above
-  `./_instant/payments/cached/stripe_plans.json` // created from npx payments bootstrap
+  `./_instant/payments/cache/stripe_plans.json` // created from npx payments bootstrap
 );
 
 // Return this as part of an API response
@@ -215,7 +215,7 @@ let subscription = await payments.customers.subscribe({
 Instant Payments automatically configures all of your Stripe **Products** and **Prices**
 for you based on two files, `_instant/payments/plans.json` and `_instant/payments/line_items.json`.
 These are files used to define your available subscription plans. This will then create a cache
-of your plans and associated stripe data in `_instant/payments/cached/stripe_plans.json`,
+of your plans and associated stripe data in `_instant/payments/cache/stripe_plans.json`,
 which you will use to instantiate Instant Payments.
 
 ### Plans: `_instant/payments/plans.json`
@@ -446,7 +446,7 @@ To create a new `InstantPayments` instance, use:
 const payments = new InstantPayments(
   process.env.STRIPE_SECRET_KEY,
   process.env.STRIPE_PUBLISHABLE_KEY,
-  `./_instant/payments/cached/stripe_plans.json` // created via bootstrapping
+  `./_instant/payments/cache/stripe_plans.json` // created via bootstrapping
 );
 ```
    
@@ -571,7 +571,7 @@ await payments.paymentMethods.list({email: 'test@test.com'});
  * @param {string} successURL URL to redirect to if the payment method addition is successful
  * @param {string} cancelURL URL to redirect to if the payment method addition is cancelled
  * @returns {object} checkoutSession
- * @returns {string} checkoutSession.stripe_publish_key         Key to use for creating Stripe checkout sessions
+ * @returns {string} checkoutSession.stripe_publishable_key         Key to use for creating Stripe checkout sessions
  * @returns {string} checkoutSession.stripe_checkout_session_id Checkout session id for use with Stripe's frontend library
  */
 ```
