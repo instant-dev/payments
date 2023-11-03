@@ -100,9 +100,36 @@ user's email. This is slower than a database call but typically can be executed 
 
 ### Quickstart via `instant` CLI
 
+If you are using the [`instant` command line tools](https://github.com/instant-dev/instant), you can
+get started with Instant payments easily:
+
+```shell
+instant kit payments
 ```
-TODO: WIP
+
+This will perform the following actions:
+
+- Install `@instant.dev/payments`
+- Automatically set `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` in `.env` and `.env.test`
+- Create example `_instant/payments/plans.json` and `_instant/payments/line_items.json` for you
+- Create example endpoints for `subscriptions`, `plans`, `paymentMethods` and `invoices`
+- Create example tests for your endpoints
+
+Once installed, run:
+
+```shell
+instant payments:sync
+instant payments:sync --env test
 ```
+
+To sync (bootstrap) your plans to Stripe and create a `_instant/payments/cache/stripe_plans.json` file.
+Then you're all good to go! You can run;
+
+```shell
+instant test
+```
+
+To verify everything worked correctly.
 
 ### Manual Installation
 
@@ -364,9 +391,14 @@ The basic structure of your `line_items.json` looks something like this;
 
 ### Bootstrapping via `instant` CLI
 
+Bootstrapping via the [`instant` command line tools](https://github.com/instant-dev/instant) is easy.
+
+```shell
+instant payments:sync # your dev environment
+instant payments:sync --env test # all other environments
 ```
-TODO: WIP
-```
+
+You'll want to run this before you deploy to staging or production.
 
 ### Bootstrapping via `npx payments bootstrap`
 
@@ -719,9 +751,24 @@ are set in any environment you deploy to.
 
 ### Deploying via `instant` CLI
 
+To deploy via the [`instant` command line tools](https://github.com/instant-dev/instant), make
+sure you first run:
+
+```shell
+instant payments:sync --env [deploy_target]
 ```
-TODO: WIP
+
+Where `[deploy_target]` the env you want to ship to. This will make sure Stripe for that
+environment is properly synced, and ensure `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`
+are set for those environments.
+
+You can then deploy normally with:
+
+```shell
+instant deploy --env [deploy_target]
 ```
+
+And that's it!
 
 ### Deploying manually
 
