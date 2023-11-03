@@ -1,8 +1,8 @@
 {
   "name": "@instant.dev/payments",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Payments library that uses Stripe as a system of record",
-  "main": "index.mjs",
+  "main": "index.js",
   "scripts": {
     "test": "mocha ./test/run.mjs"
   },
