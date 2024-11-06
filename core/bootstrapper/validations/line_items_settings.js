@@ -1,5 +1,6 @@
 const SchemaValidation = require('./schema.js');
 
+const anyValidation = require('./units/any.js');
 const positiveIntegerValidation = require('./units/positive_integer.js');
 const stringValidation = require('./units/string.js');
 const priceValidation = require('./units/price.js');
@@ -56,7 +57,7 @@ module.exports = {
           'Line Items Settings (type: "flag")',
           [v],
           {
-            "value": positiveIntegerValidation,
+            "value": anyValidation,
             "display_value": stringValidation
           },
           null,
