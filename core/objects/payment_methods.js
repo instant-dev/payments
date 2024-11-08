@@ -16,6 +16,7 @@ class paymentMethodsObject {
    * @returns {object} checkoutSession
    * @returns {string} checkoutSession.stripe_publishable_key     Key to use for creating Stripe checkout sessions
    * @returns {string} checkoutSession.stripe_checkout_session_id Checkout session id for use with Stripe's frontend library
+   * @returns {string} checkoutSession.stripe_checkout_session_url Checkout session url
    */
   async create ({email, successURL, cancelURL}) {
 

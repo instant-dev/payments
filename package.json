@@ -1,6 +1,6 @@
 {
   "name": "@instant.dev/payments",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Payments library that uses Stripe as a system of record",
   "main": "index.js",
   "scripts": {

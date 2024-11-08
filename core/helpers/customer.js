@@ -342,7 +342,8 @@ class Customer {
       }
     );
     return {
-      stripe_checkout_session_id: checkoutSession.id
+      stripe_checkout_session_id: checkoutSession.id,
+      stripe_checkout_session_url: checkoutSession.url
     };
   }
 
@@ -372,7 +373,8 @@ class Customer {
       }
     );
     return {
-      stripe_checkout_session_id: checkoutSession.id
+      stripe_checkout_session_id: checkoutSession.id,
+      stripe_checkout_session_url: checkoutSession.url
     };
   }
 
