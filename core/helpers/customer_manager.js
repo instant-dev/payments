@@ -69,6 +69,16 @@ class CustomerManager {
         `Valid plans are: "${this.plans.map(plan => plan.name).join('", "')}"`
       ].join('\n'));
     }
+
+    // Cancel any active checkout sessions for this customer before we fetch subscription
+    const activeCheckoutSessions = await this.stripe.checkout.sessions.list({
+      customer: customer.stripeId,
+      status: 'open'
+    });
+    await Promise.all(activeCheckoutSessions.data.map(session => {
+      return this.stripe.checkout.sessions.expire(session.id);
+    }));
+
     const currentPlan = await customer.getCurrentPlan(this.plans);
     if (lineItemCounts) {
       let lineItemsTracker = {};
@@ -148,6 +158,7 @@ class CustomerManager {
         }
       }
     }
+
     let subscription = null;
     if (!planName) {
       // If we provide planName = null, just delete the subscription
@@ -186,6 +197,7 @@ class CustomerManager {
           error.details = existingLineItemErrors;
           throw error;
         }
+        // Cancel the subscription
         await this.stripe.subscriptions.cancel(
           currentPlan.stripeData.subscription.id,
           {
