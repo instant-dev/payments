@@ -18,7 +18,7 @@ class PlansObject {
     if (account_type === null) {
       return this.customerManager.plans;
     } else {
-      return this.customerManager.plans.filter(plan => plan.account_type === account_type);
+      return this.customerManager.plans.filter(plan => plan.account_type === account_type || plan.account_type === '*');
     }
 
   }
@@ -36,7 +36,7 @@ class PlansObject {
     const plan = await customer.getCurrentPlan(this.customerManager.plans);
     const plans = account_type === null
       ? this.customerManager.plans
-      : this.customerManager.plans.filter(plan => plan.account_type === account_type);
+      : this.customerManager.plans.filter(plan => plan.account_type === account_type || plan.account_type === '*');
     return {
       currentPlan: plan,
       plans: plans
