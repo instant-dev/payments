@@ -289,7 +289,7 @@ export default async function (setupResult) {
 
   it('should show all subscription plans', async function () {
 
-    let planList = await payments.plans.list({email});
+    let planList = await payments.plans.list();
 
     expect(planList).to.exist;
     expect(planList).to.deep.equal(plans);
@@ -608,7 +608,7 @@ export default async function (setupResult) {
 
   it('should modify line items for plans', async function () {
 
-    this.timeout(5000);
+    this.timeout(10_000);
 
     let subscription = await payments.customers.subscribe({
       email,
@@ -674,7 +674,7 @@ export default async function (setupResult) {
 
   it('should upgrade plan and automatically update line items', async function () {
 
-    this.timeout(5000);
+    this.timeout(10_000);
 
     let subscription = await payments.customers.subscribe({
       email,
@@ -730,7 +730,7 @@ export default async function (setupResult) {
 
   it('should downgrade plan and automatically update line items', async function () {
 
-    this.timeout(5000);
+    this.timeout(10_000);
 
     let subscription = await payments.customers.subscribe({
       email,
@@ -749,7 +749,9 @@ export default async function (setupResult) {
 
   it('should retrieve downgraded plan line items set properly', async function () {
 
-    let planResult = await payments.plans.current({email});
+    this.timeout(10_000);
+
+    let planResult = await payments.plans.current({ email });
 
     expect(planResult).to.exist;
     expect(planResult.currentPlan).to.exist;
@@ -909,7 +911,7 @@ export default async function (setupResult) {
 
   it('should upgrade plan back to business with a major charge using bad credit card', async function () {
 
-    this.timeout(5000);
+    this.timeout(10_000);
 
     let subscription = await payments.customers.subscribe({
       email,

@@ -7,6 +7,10 @@ module.exports = {
       return v && typeof v === 'string' && v.match(/^[a-z][a-z0-9\-\_]*$/i)
     },
   },
+  'category': {
+    message: 'Must be a string and be > 0 in length',
+    validate: v => v && typeof v === 'string'
+  },
   'display_name': {
     message: 'Must be a string and be > 0 in length',
     validate: v => v && typeof v === 'string'

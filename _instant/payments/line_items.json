@@ -3,6 +3,7 @@
     "name": "execution_time",
     "display_name": "Execution time",
     "description": "The amount of time your functions run for, measured in GB of RAM multiplied by number of seconds.",
+    "category": "default",
     "type": "usage",
     "settings": {
       "price": {
@@ -17,6 +18,7 @@
     "name": "ai_agent",
     "display_name": "Pearl (AI Agent)",
     "description": "Amount of included usage of Pearl, your AI assistant.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 5,
@@ -27,6 +29,7 @@
     "name": "collaborator_seats",
     "display_name": "Team seats",
     "description": "The number of team members that can actively collaborate on projects for this account.",
+    "category": "default",
     "type": "capacity",
     "settings": {
       "price": {
@@ -39,6 +42,7 @@
     "name": "projects",
     "display_name": "Projects",
     "description": "The number of active (non-archived) projects you can work on at a time",
+    "category": "default",
     "type": "capacity",
     "settings": {
       "price": {
@@ -51,6 +55,7 @@
     "name": "environments",
     "display_name": "Environments per project",
     "description": "The number of development environments that you can work on per project, e.g. dev, staging. Releases don't count towards this number.",
+    "category": "default",
     "type": "capacity",
     "settings": {
       "price": {
@@ -63,6 +68,7 @@
     "name": "linked_apps",
     "display_name": "Linked resources per app",
     "description": "The maximum number of active resources you can link per app. Adding capacity increases your limit for all apps at once.",
+    "category": "default",
     "type": "capacity",
     "settings": {
       "price": {
@@ -75,6 +81,7 @@
     "name": "hostnames",
     "display_name": "Hostnames",
     "description": "Use these to route domains like api.my-project.com to your APIs.",
+    "category": "default",
     "type": "capacity",
     "settings": {
       "price": {
@@ -87,6 +94,7 @@
     "name": "timeout",
     "display_name": "Timeout maximum",
     "description": "The maximum amount of time your endpoints can execute for.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 30000,
@@ -97,6 +105,7 @@
     "name": "memory",
     "display_name": "Maximum RAM",
     "description": "Maximum RAM available for your endpoint.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 512,
@@ -107,6 +116,7 @@
     "name": "custom_tokens",
     "display_name": "Custom tokens",
     "description": "The number of custom API tokens you can create.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 3,
@@ -117,6 +127,7 @@
     "name": "log_retention",
     "display_name": "Log retention",
     "description": "The number of days we retain your function execution logs.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 1,
@@ -127,6 +138,7 @@
     "name": "support",
     "display_name": "Support",
     "description": "The level of support you have from the Autocode team.",
+    "category": "default",
     "type": "flag",
     "settings": {
       "value": 0,

@@ -9,12 +9,17 @@ class PlansObject {
   }
 
   /**
-   * Lists all available plans
+   * Lists all available plans by category
+   * @param {string} account_type Account type to filter plans by
    * @returns {array} plans Available plans
    */
-  async list () {
+  async list ({ account_type = null } = {}) {
 
-    return this.customerManager.plans;
+    if (account_type === null) {
+      return this.customerManager.plans;
+    } else {
+      return this.customerManager.plans.filter(plan => plan.account_type === account_type);
+    }
 
   }
 
@@ -25,13 +30,16 @@ class PlansObject {
    * @returns {object} planResult.currentPlan Current Subscription plan
    * @returns {array}  planResult.plans       All available plans
    */
-  async current ({email}) {
+  async current ({ email, account_type = null } = {}) {
 
     const customer = await this.customerManager.findCustomer(email);
     const plan = await customer.getCurrentPlan(this.customerManager.plans);
+    const plans = account_type === null
+      ? this.customerManager.plans
+      : this.customerManager.plans.filter(plan => plan.account_type === account_type);
     return {
       currentPlan: plan,
-      plans: this.customerManager.plans
+      plans: plans
     };
 
   }

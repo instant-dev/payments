@@ -2,6 +2,7 @@
   {
     "name": "free_plan",
     "display_name": "Limited",
+    "account_type": "default",
     "enabled": true,
     "visible": true,
     "price": null,
@@ -21,6 +22,7 @@
   {
     "name": "standard_plan",
     "display_name": "Standard",
+    "account_type": "default",
     "enabled": true,
     "visible": true,
     "price": {
@@ -73,6 +75,7 @@
   {
     "name": "business_plan",
     "display_name": "Business",
+    "account_type": "default",
     "enabled": true,
     "visible": true,
     "price": {

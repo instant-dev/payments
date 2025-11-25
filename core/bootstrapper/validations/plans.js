@@ -1,6 +1,7 @@
 const lineItemsSettingsValidation = require('./line_items_settings.js');
 const priceValidation = require('./units/price.js');
 const booleanValidation = require('./units/boolean.js');
+const stringValidation = require('./units/string.js');
 
 module.exports = {
   'name': {
@@ -13,6 +14,7 @@ module.exports = {
     message: 'Must be a string and be > 0 in length',
     validate: v => v && typeof v === 'string'
   },
+  'account_type': stringValidation,
   'enabled': booleanValidation,
   'visible': booleanValidation,
   'price': priceValidation,
