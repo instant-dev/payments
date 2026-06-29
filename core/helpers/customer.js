@@ -4,17 +4,36 @@ class Customer {
 
   constructor (stripeMetadataPrefix, stripe, email) {
     this.STRIPE_METADATA_PREFIX = stripeMetadataPrefix;
-    if (typeof email !== 'string') {
-      throw new Error(`Customer "email" must be a string`)
-    }
-    if (!email) {
-      throw new Error(`Customer "email" must be non-empty`)
-    }
-    if (email.indexOf('@') === -1) {
-      throw new Error(`Customer "email" must be valid`)
+    if (typeof email === 'string') {
+      if (!email) {
+        throw new Error(`Customer "email" must be non-empty`);
+      }
+      if (email.indexOf('@') === -1) {
+        throw new Error(`Customer "email" must be valid`);
+      }
+      this.uniqueEmail = email;
+      this.billingEmail = email;
+    } else if (email && typeof email === 'object' && !Array.isArray(email)) {
+      const {unique_email, billing_email} = email;
+      if (typeof unique_email !== 'string' || !unique_email) {
+        throw new Error(`Customer "email.unique_email" must be a non-empty string`);
+      }
+      if (unique_email.indexOf('@') === -1) {
+        throw new Error(`Customer "email.unique_email" must be valid`);
+      }
+      if (typeof billing_email !== 'string' || !billing_email) {
+        throw new Error(`Customer "email.billing_email" must be a non-empty string`);
+      }
+      if (billing_email.indexOf('@') === -1) {
+        throw new Error(`Customer "email.billing_email" must be valid`);
+      }
+      this.uniqueEmail = unique_email;
+      this.billingEmail = billing_email;
+    } else {
+      throw new Error(`Customer "email" must be a string or an object with "unique_email" and "billing_email"`);
     }
     this.stripe = stripe;
-    this.email = email;
+    this.email = this.billingEmail;
     this.stripeId = null;
     this.currency = null;
     this.stripeDetails = {};
@@ -28,6 +47,8 @@ class Customer {
   toJSON () {
     return {
       email: this.email,
+      uniqueEmail: this.uniqueEmail,
+      billingEmail: this.billingEmail,
       stripeData: Object.keys(this.stripeData).reduce((data, key) => {
         if (this.stripeData[key]) {
           data[key] = this.stripeData[key];
@@ -40,7 +61,8 @@ class Customer {
   serializeStripeMetadata () {
     return {
       ...this.stripeMetadata,
-      [this.STRIPE_METADATA_PREFIX]: 'true'
+      [this.STRIPE_METADATA_PREFIX]: 'true',
+      [`${this.STRIPE_METADATA_PREFIX}_unique_email`]: this.uniqueEmail
     };
   }
 
@@ -90,13 +112,13 @@ class Customer {
     return await this.syncToStripe();
   }
 
-  async syncFromStripe () {
+  async _listStripeCustomersByEmail (email) {
     let customers = [];
     let customersResponse = {has_more: true};
     let query = {limit: 100};
     while (customersResponse.has_more) {
       customersResponse = await this.stripe.customers.list({
-        email: this.email,
+        email: email,
         ...query
       });
       if (customersResponse.data.length) {
@@ -104,12 +126,62 @@ class Customer {
         query.starting_after = customers[customers.length - 1].id;
       }
     }
-    let customer = customers.find(customer => customer.metadata[this.STRIPE_METADATA_PREFIX] === 'true');
+    return customers;
+  }
+
+  async _migrateCustomer (customer) {
+    const metadata = {
+      ...customer.metadata,
+      [`${this.STRIPE_METADATA_PREFIX}_unique_email`]: this.uniqueEmail
+    };
+    const updateData = {metadata};
+    if (this.billingEmail !== this.uniqueEmail) {
+      updateData.email = this.billingEmail;
+    }
+    const updated = await this.stripe.customers.update(customer.id, updateData);
+    if (
+      updated.metadata[`${this.STRIPE_METADATA_PREFIX}_unique_email`] !== this.uniqueEmail
+    ) {
+      throw new Error(
+        `Failed to migrate customer "${customer.id}":` +
+        ` expected metadata "${this.STRIPE_METADATA_PREFIX}_unique_email" to be "${this.uniqueEmail}"`
+      );
+    }
+    return updated;
+  }
+
+  async syncFromStripe () {
+    const uniqueEmailKey = `${this.STRIPE_METADATA_PREFIX}_unique_email`;
+    // Phase 1: search by billingEmail
+    let customers = await this._listStripeCustomersByEmail(this.billingEmail);
+    let prefixedCustomers = customers.filter(
+      c => c.metadata[this.STRIPE_METADATA_PREFIX] === 'true'
+    );
+    // Look for a migrated customer matching our uniqueEmail
+    let customer = prefixedCustomers.find(
+      c => c.metadata[uniqueEmailKey] === this.uniqueEmail
+    );
     if (!customer) {
-      customer = customers.find(customer => customer.currency === 'usd');
+      // Check for an unmigrated customer at billingEmail
+      let unmigrated = prefixedCustomers.find(c => !c.metadata[uniqueEmailKey]);
+      if (!unmigrated && this.billingEmail !== this.uniqueEmail) {
+        // Phase 2: search by uniqueEmail (pre-migration state)
+        let uniqueCustomers = await this._listStripeCustomersByEmail(this.uniqueEmail);
+        let uniquePrefixed = uniqueCustomers.filter(
+          c => c.metadata[this.STRIPE_METADATA_PREFIX] === 'true'
+        );
+        unmigrated = uniquePrefixed.find(c => !c.metadata[uniqueEmailKey]);
+      }
+      if (unmigrated) {
+        customer = await this._migrateCustomer(unmigrated);
+      }
+    }
+    // Fallback: currency-based matching (for customers without instpay metadata)
+    if (!customer) {
+      customer = customers.find(c => c.currency === 'usd');
     }
     if (!customer) {
-      customer = customers.find(customer => !customer.currency);
+      customer = customers.find(c => !c.currency);
     }
     if (customer) {
       this.stripeId = customer.id;
@@ -160,6 +232,29 @@ class Customer {
     }
   }
 
+  async updateEmail (toEmail) {
+    if (typeof toEmail !== 'string' || !toEmail) {
+      throw new Error(`updateEmail requires a non-empty string`);
+    }
+    if (toEmail.indexOf('@') === -1) {
+      throw new Error(`updateEmail requires a valid email`);
+    }
+    await this.ensureInStripe();
+    this.billingEmail = toEmail;
+    this.email = toEmail;
+    const metadata = this.serializeStripeMetadata();
+    const customer = await this.stripe.customers.update(
+      this.stripeId,
+      {
+        email: this.email,
+        ...this.stripeDetails,
+        metadata: metadata
+      }
+    );
+    this.stripeData.customer = customer;
+    return this;
+  }
+
   async getCurrentPlan (plans, subscription = null) {
     await this.ensureInStripe();
     if (!Array.isArray(plans)) {
@@ -174,7 +269,7 @@ class Customer {
     if (!subscription) {
       plan = plans.find(plan => plan.price === null);
       if (!plan) {
-        throw new Error(`Customer "${customer.stripeData.email}" has no plan, and no free plan found`);
+        throw new Error(`Customer "${this.email}" has no plan, and no free plan found`);
       }
     } else {
       let subscriptionItems = [];

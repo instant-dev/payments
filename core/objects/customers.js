@@ -55,6 +55,20 @@ class CustomersObject {
 
   }
 
+  /**
+   * Updates the billing email for a customer without changing the unique email
+   * @param {string|object} email Customer email address (string or {unique_email, billing_email})
+   * @param {string} toEmail The new billing email address
+   * @returns {object} customer
+   */
+  async updateEmail ({email, toEmail}) {
+
+    const customer = await this.customerManager.findCustomer(email);
+    await customer.updateEmail(toEmail);
+    return customer.toJSON();
+
+  }
+
 };
 
 module.exports = CustomersObject;
