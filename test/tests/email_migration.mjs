@@ -247,4 +247,33 @@ export default async function (setupResult) {
 
   });
 
+  it('does not resolve to another org customer sharing the same billing_email', async function () {
+
+    this.timeout(15000);
+
+    const uniqueEmailA = `test+crossorgA_${ts}@instant.dev`;
+    const uniqueEmailB = `test+crossorgB_${ts}@instant.dev`;
+    const sharedBillingEmail = `test+crossorg_shared_${ts}@instant.dev`;
+
+    // Create Org A's customer (already migrated, has _unique_email metadata)
+    const stripeCustomerA = await stripe.customers.create({
+      email: sharedBillingEmail,
+      metadata: {instpay: 'true', instpay_unique_email: uniqueEmailA},
+      balance: -1900
+    });
+
+    // Now Org B looks up with the same billing email but different unique email
+    let customerB = await payments.customers.find({
+      email: {unique_email: uniqueEmailB, billing_email: sharedBillingEmail}
+    });
+
+    // Should NOT have resolved to Org A's customer
+    expect(customerB).to.exist;
+    expect(customerB.stripeData.customer).to.exist;
+    expect(customerB.stripeData.customer.id).to.not.equal(stripeCustomerA.id);
+    expect(customerB.stripeData.customer.metadata.instpay_unique_email).to.equal(uniqueEmailB);
+    expect(customerB.stripeData.customer.balance).to.equal(0);
+
+  });
+
 };

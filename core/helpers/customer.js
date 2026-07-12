@@ -176,12 +176,13 @@ class Customer {
         customer = await this._migrateCustomer(unmigrated);
       }
     }
-    // Fallback: currency-based matching (for customers without instpay metadata)
+    // Fallback: currency-based matching (only for customers not owned by another unique_email)
     if (!customer) {
-      customer = customers.find(c => c.currency === 'usd');
-    }
-    if (!customer) {
-      customer = customers.find(c => !c.currency);
+      const isUnowned = c => !c.metadata[uniqueEmailKey] || c.metadata[uniqueEmailKey] === this.uniqueEmail;
+      customer = customers.find(c => c.currency === 'usd' && isUnowned(c));
+      if (!customer) {
+        customer = customers.find(c => !c.currency && isUnowned(c));
+      }
     }
     if (customer) {
       this.stripeId = customer.id;
