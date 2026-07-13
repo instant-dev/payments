@@ -170,7 +170,14 @@ class Customer {
         let uniquePrefixed = uniqueCustomers.filter(
           c => c.metadata[this.STRIPE_METADATA_PREFIX] === 'true'
         );
-        unmigrated = uniquePrefixed.find(c => !c.metadata[uniqueEmailKey]);
+        let alreadyMigrated = uniquePrefixed.find(
+          c => c.metadata[uniqueEmailKey] === this.uniqueEmail
+        );
+        if (alreadyMigrated) {
+          customer = alreadyMigrated;
+        } else {
+          unmigrated = uniquePrefixed.find(c => !c.metadata[uniqueEmailKey]);
+        }
       }
       if (unmigrated) {
         customer = await this._migrateCustomer(unmigrated);
