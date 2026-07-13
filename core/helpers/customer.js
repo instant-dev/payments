@@ -468,6 +468,9 @@ class Customer {
         mode: 'subscription',
         currency: 'usd',
         payment_method_types: ['card'],
+        saved_payment_method_options: {
+          allow_redisplay_filters: ['always', 'limited', 'unspecified']
+        },
         metadata: {
           [this.STRIPE_METADATA_PREFIX]: 'true'
         },

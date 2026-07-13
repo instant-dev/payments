@@ -198,13 +198,19 @@ class CustomerManager {
           throw error;
         }
         // Cancel the subscription
-        await this.stripe.subscriptions.cancel(
+        let cancelledSub = await this.stripe.subscriptions.cancel(
           currentPlan.stripeData.subscription.id,
           {
             invoice_now: true,
             prorate: true
           }
         );
+        if (cancelledSub.latest_invoice) {
+          let invoice = await this.stripe.invoices.retrieve(cancelledSub.latest_invoice);
+          if (invoice.status === 'draft') {
+            await this.stripe.invoices.finalizeInvoice(invoice.id);
+          }
+        }
       }
     } else {
       let planPrice = null;
@@ -398,13 +404,19 @@ class CustomerManager {
       } else if (currentPlan.stripeData && currentPlan.stripeData.subscription) {
         // Note: This should never technically happen - no items on a subscription
         //       The path for this should be providing `planName = null` above
-        await this.stripe.subscriptions.cancel(
+        let cancelledSub = await this.stripe.subscriptions.cancel(
           currentPlan.stripeData.subscription.id,
           {
             invoice_now: true,
             prorate: true
           }
         );
+        if (cancelledSub.latest_invoice) {
+          let invoice = await this.stripe.invoices.retrieve(cancelledSub.latest_invoice);
+          if (invoice.status === 'draft') {
+            await this.stripe.invoices.finalizeInvoice(invoice.id);
+          }
+        }
       }
     }
     return subscription;
